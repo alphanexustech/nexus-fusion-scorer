@@ -1,6 +1,6 @@
 from flask import Blueprint
 from flask import render_template, redirect, url_for, jsonify, request
-
+from multiprocessing import Pool
 import requests, json
 
 # Date
@@ -21,7 +21,7 @@ def call_affect_scorer(doc=None):
     if(r.raise_for_status()):
         return 404
     else:
-        return r.json()
+        return {'affect_scores': r.json()}
 
 def call_role_scorer(doc=None):
     payload = {'doc': doc}
@@ -29,7 +29,7 @@ def call_role_scorer(doc=None):
     if(r.raise_for_status()):
         return 404
     else:
-        return r.json()
+        return {'role_scores': r.json()}
 
 def call_percept_scorer(doc=None):
     payload = {'doc': doc}
@@ -37,14 +37,28 @@ def call_percept_scorer(doc=None):
     if(r.raise_for_status()):
         return 404
     else:
-        return r.json()
+        return {'percept_scores': r.json()}
+
+def worker(input_pair):
+    func, arg = input_pair
+    return func(arg)
 
 def call_scorers(doc=None):
     result = {}
+    # functions = [call_affect_scorer, call_role_scorer, call_percept_scorer]
+    # types = ['affect_scores', 'role_scores', 'percept_scores']
+    pool = Pool(3)
+    # result['affect_scores'] = call_affect_scorer(doc)
+    # result['role_scores'] = call_role_scorer(doc)
+    # result['percept_scores'] = call_percept_scorer(doc)
 
-    result['affect_scores'] = call_affect_scorer(doc)
-    result['role_scores'] = call_role_scorer(doc)
-    result['percept_scores'] = call_percept_scorer(doc)
+    pooled_results = pool.map(worker, [(call_affect_scorer, doc),(call_role_scorer, doc), (call_percept_scorer, doc)])
+    pool.close()
+    pool.join()
+
+    for r in pooled_results:
+        key = list(r.keys())[0] # This is the key of the scorer
+        result[key] = r[key]
 
     return result
 
