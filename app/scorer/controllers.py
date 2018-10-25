@@ -45,13 +45,7 @@ def worker(input_pair):
 
 def call_scorers(doc=None):
     result = {}
-    # functions = [call_affect_scorer, call_role_scorer, call_percept_scorer]
-    # types = ['affect_scores', 'role_scores', 'percept_scores']
     pool = Pool(3)
-    # result['affect_scores'] = call_affect_scorer(doc)
-    # result['role_scores'] = call_role_scorer(doc)
-    # result['percept_scores'] = call_percept_scorer(doc)
-
     pooled_results = pool.map(worker, [(call_affect_scorer, doc),(call_role_scorer, doc), (call_percept_scorer, doc)])
     pool.close()
     pool.join()
