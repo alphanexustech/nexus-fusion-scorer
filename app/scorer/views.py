@@ -12,3 +12,7 @@ def analyze_text(fusion_set=None):
     r = request.get_json()
     doc = r.get('doc')
     return jsonify(controllers.analyze_text(fusion_set=fusion_set, doc=doc))
+
+@scorer.route('/get_feature_index/', methods=['GET'])
+def get_feature_index():
+    return jsonify(controllers.get_feature_index())
